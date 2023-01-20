@@ -1,0 +1,28 @@
+version: '2.1'
+orbs:
+
+jobs:
+  checkout_and_build:
+     docker:
+       - image: cimg/python:3.10.5
+     steps:
+       - setup_remote_docker
+       - checkout 
+       - run: pip install awscli
+       - run: 
+            name: configure aws 
+            command: aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_key_id $AWS_SECRET_KEY_ID && aws configure set default.region $AWS_DEFAULT_REGION
+       - run:
+            name: Get the number of instance in this region 
+            command: aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query "Reservations[*].Instances[*].[InstanceId]" --output text  
+
+
+workflows:
+  test-check:
+    jobs:
+      - checkout_and_build:
+         context: aws-credentials
+         filters:
+            branches:
+               only:
+                 - main  
