@@ -1,28 +1,19 @@
-version: '2.1'
-orbs:
+version: 2.1
 
 jobs:
-  checkout_and_build:
-     docker:
-       - image: cimg/python:3.10.5
+   deploy:
+     machine:
+        enabled: true
      steps:
-       - setup_remote_docker
-       - checkout 
-       - run: pip install awscli
-       - run: 
-            name: configure aws 
+        - run:
+            name: Deploy Over SSH
             command: |
-              aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY && aws configure set default.region $AWS_DEFAULT_REGION
-              aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query "Reservations[*].Instances[*].[InstanceId]" --output text  
-
+            ssh $SSH_USER@$SSH_HOST "echo "Hello">>test.txt"
 
 workflows:
-  test-check:
+    build-and-deploy:
     jobs:
-      - checkout_and_build:
-         context: aws-credentials
-         type: approval
-         filters:
+        - deploy:
+            filters:
             branches:
-               only:
-                 - main  
+                only: main # only deploy on the main branch
