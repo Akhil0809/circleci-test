@@ -1,8 +1,8 @@
 version: 2.1
 
 jobs:
-   deploy:
-     machine:
+    deploy:
+    machine:
         enabled: true
      steps:
         - run:
