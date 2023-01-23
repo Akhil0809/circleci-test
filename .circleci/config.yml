@@ -1,24 +1,32 @@
-version: 2.1
+version: '2.1'
+orbs: 
 
 jobs:
-    build:
-    #...
-    deploy:
-    machine:
+  checkout_and_build:
+     docker:
+       - image: cimg/python:3.10.5
+     steps:
+       - setup_remote_docker
+       - checkout 
+       - run: pip install awscli
+       - run: 
+            name: configure aws 
+            command: aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_key $AWS_SECRET_KEY && aws configure set default.region $AWS_DEFAULT_REGION
+  develop_ssh_connection:
+     machine:
         enabled: true
-    steps:
+     steps:
         - run:
             name: Deploy Over SSH
-            command: |
-            ssh $SSH_USER@$SSH_HOST "<remote deploy command>"
+            command: ssh $SSH_USER@$SSH_HOST "<remote deploy command>"
 
-workflows:
-    build-and-deploy:
-    jobs:
-        - build
-        - deploy:
-            requires:
-            - build # only deploy once build job has completed
+workflows:  
+   for-tailcutter:
+      jobs:
+        - checkout_and_build:
+            context: aws-credentials
+            type: approval
             filters:
-            branches:
-                only: main # only deploy on the main branch
+              branches:
+                only:
+                 - master
