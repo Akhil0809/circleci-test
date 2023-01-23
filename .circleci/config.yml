@@ -29,7 +29,7 @@ workflows:
             filters:
               branches:
                 only:
-                 - master
+                 - main
         - develop_ssh_connection:
             context: ssh_coonection
             filters:
