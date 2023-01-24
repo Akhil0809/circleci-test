@@ -17,7 +17,7 @@ jobs:
               docker build -t test .
               docker tag test:latest 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:latest
               docker push 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:latest
-  develop_ssh_connection:
+  develop_ssh_connection_and_pull_images:
      machine:
         enabled: true
      steps:
@@ -26,7 +26,8 @@ jobs:
             command: |
               ssh $SSH_USER@$SSH_HOST "ls /"
               aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_key $AWS_SECRET_KEY && aws configure set default.region $AWS_DEFAULT_REGION
-              aws ecr describe-repositories
+              docker pull 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:latest
+              docker images
 
 workflows:  
    for-tailcutter:
@@ -37,7 +38,9 @@ workflows:
               branches:
                 only:
                  - main
-        - develop_ssh_connection:
+        - develop_ssh_connection_and_pull_images:
+            requires:
+              - checkout_and_build
             context: 
               - ssh_coonection
               - aws-credentials
