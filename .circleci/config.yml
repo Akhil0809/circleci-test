@@ -30,7 +30,6 @@ workflows:
       jobs:
         - checkout_and_build:
             context: aws-credentials
-            type: approval
             filters:
               branches:
                 only:
