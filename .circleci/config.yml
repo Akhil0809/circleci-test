@@ -19,7 +19,7 @@ jobs:
         - run:
             name: Deploy Over SSH
             command: |
-             ssh $SSH_USER@$SSH_HOST "ls /"
+             ssh $SSH_USER@$SSH_HOST 
              aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 310961312410.dkr.ecr.ap-south-1.amazonaws.com
              aws ecr list-images --repository-name test
 workflows:  
