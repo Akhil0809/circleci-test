@@ -3,7 +3,7 @@ orbs:
 
 jobs:
   build_and_push_image_to_ecr:
-  #using docker as executor
+  #ussing docker as executor
      docker:
        - image: cimg/python:3.10.5
      steps:
