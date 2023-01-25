@@ -2,59 +2,36 @@ version: '2.1'
 orbs: 
 
 jobs:
-  build_and_push_image_to_ecr:
+  checkout_and_build:
      docker:
        - image: cimg/python:3.10.5
      steps:
-       - setup_remote_docker  
-       - checkout #checkout git repo
+       - setup_remote_docker
+       - checkout 
        - run: pip install awscli
-       - run:
-            name: build and push images 
-            command: |
-              aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_key $AWS_SECRET_KEY && aws configure set default.region $AWS_DEFAULT_REGION 
-              aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 310961312410.dkr.ecr.ap-south-1.amazonaws.com
-              docker build -t 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:$(echo $CIRCLE_SHA1 | head -c7) .
-              docker push 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:$(echo $CIRCLE_SHA1 | head -c7)
-              aws ecr list-images --repository-name test
-  establish_ssh_connection_and_pull_image:
-     #heere we are using aws linux server over which we can run our docker conatiners for deployment 
+       - run: 
+            name: configure aws 
+            command: aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_key $AWS_SECRET_KEY && aws configure set default.region $AWS_DEFAULT_REGION
+  develop_ssh_connection:
      machine:
         enabled: true
      steps:
         - run:
-            name: Establish SSH connection
+            name: Deploy Over SSH
             command: ssh $SSH_USER@$SSH_HOST "ls /"
-        - run:
-            name: configure aws and ecr and then pull image     
-            command: |
-              aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_key $AWS_SECRET_KEY && aws configure set default.region $AWS_DEFAULT_REGION
-              aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 310961312410.dkr.ecr.ap-south-1.amazonaws.com
-              docker pull 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:$(echo $CIRCLE_SHA1 | head -c7)
-              docker images
-        - run: 
-            name: Run these docker images
-            command: |
-              docker run -itd --name test-container 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:$(echo $CIRCLE_SHA1 | head -c7)
 
 workflows:  
    for-tailcutter:
       jobs:
-        - build_and_push_image_to_ecr:
+        - checkout_and_build:
             context: aws-credentials
             filters:
               branches:
                 only:
                  - main
-        - establish_ssh_connection_and_pull_image:
-            requires:
-              - build_and_push_image_to_ecr
-            context: 
-              - ssh_coonection
-              - aws-credentials
+        - develop_ssh_connection:
+            context: ssh_coonection  
             filters:
               branches:
                 only:
-                 - main
-            
-
+                 - main      
