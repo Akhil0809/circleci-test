@@ -33,7 +33,9 @@ workflows:
                 only:
                  - main
         - develop_ssh_connection:
-            context: ssh_coonection  
+            context: 
+              - ssh_coonection
+              - aws-credentials  
             filters:
               branches:
                 only:
