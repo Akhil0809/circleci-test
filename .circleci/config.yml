@@ -18,7 +18,7 @@ jobs:
               docker push 310961312410.dkr.ecr.ap-south-1.amazonaws.com/test:$(echo $CIRCLE_SHA1 | head -c7)
               aws ecr list-images --repository-name test
   establish_ssh_connection_and_pull_image:
-     #here we are using aws linux server over which we can run our docker conatiners for deployment 
+     #heere we are using aws linux server over which we can run our docker conatiners for deployment 
      machine:
         enabled: true
      steps:
